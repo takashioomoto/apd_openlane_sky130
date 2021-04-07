@@ -135,3 +135,5 @@ Optimize placement
 
 Signal integrity - adding repeaters on the floorplan at expense of space
 Data slew analysis
+
+run_placement - runs course placement
