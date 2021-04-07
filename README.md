@@ -1,7 +1,7 @@
 # apd_openlane_sky130
 Advanced Physical Design using OpenLANE/Sky130 - Repository by Nuno Antunes
 
-##Day 1 Notes:
+## Day 1 Notes:
 
 hd high density
 fd foundry
@@ -16,5 +16,5 @@ lvXX voltage
 
 TODO: Screenshots
 
-##Day 2 Notes:
+## Day 2 Notes:
 SKY130_D2_SK1 - Chip Floor planning considerations
