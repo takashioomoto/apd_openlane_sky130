@@ -93,7 +93,7 @@ In order to create further changes from the prep, add <code<-overwrite</code> to
 
 This allows to apply any changes - everthing will be erased. An option to further change configuration during the run is using the <code>set</code> command:
 
-<code>set $env(CLOCK_PERIOD) 15.000</code>
+<code>set env(CLOCK_PERIOD) 15.000</code>
 
 Finally, we can run the sythesis stage:
 
@@ -117,26 +117,93 @@ For now, we are adding some configuration values to the design - FP_CORE_UTIL to
 
 ![Screenshot 2021-04-07 213023](https://user-images.githubusercontent.com/5050761/114052492-61e35b00-988e-11eb-8207-d992caa54ee1.png)
 
+In OpenLANE flow interactive, assuming the synthesis was completed in the same way as day1, we can start the placement:
+
+<code>run_floorplan</code>
+
 TODO:
 UNITS DISTANCE MICRONS 1000 ; (0.001 mm)
 DIEAREA ( llx lly ) ( urx ury )
 
+Rrom the result/floorplan foldder, it is possible to run magic to visually inspect the floorplan result:
+
 <code>magic -T ~/Desktop/work/tools/openlane_working_dir/pdks/sky130A/libs.tech/magic/sky130A.tech lef read ../../tmp/merged.lef def read picorv32a.floorplan.def &</code>
+
+![image](https://user-images.githubusercontent.com/5050761/114075375-c52cb780-98a5-11eb-8460-50b1102a0f0f.png)
 
 ### Netlist binding and initial place design
 
-Libraries contain:
+Libraries contain multiple variants of standard cells (logic gates, buffers, inverters, dff, latch, IGC) including:
   * w/h of cell
   * delay information of cell
   * required conditions of cell (venn conditions)
+  * different threhold voltage (hVt, lVt) for the cell
   * but also various shapes for same block
 
-Optimize placement
+During the placement step in openLANE, the standard cells are placed in the die, attempting to preserve signal integrity based on the input/output pins, and adding buffers between elements if distance becomes an issue.
 
-Signal integrity - adding repeaters on the floorplan at expense of space
-Data slew analysis
+<code>run_placement</code>
 
-run_placement - runs course placement
+This results in a legal placement
+![image](https://user-images.githubusercontent.com/5050761/114076170-a8dd4a80-98a6-11eb-848e-16307160b7cc.png)
+
+And it is also possible to use magic to view the cell placement.
+
+<code>magic -T ~/Desktop/work/tools/openlane_working_dir/pdks/sky130A/libs.tech/magic/sky130A.tech lef read ../../tmp/merged.lef def read picorv32a.placement.def &</code>
+
+![image](https://user-images.githubusercontent.com/5050761/114077114-bcd57c00-98a7-11eb-829b-e62024ba7965.png)
+
+## Cell design and Characterization flows
+
+With the standard cells placed, we should look into the standard cell design itself.
+
+In a library a standard cell is designed by using the several elements, that we divide in three sections:
+  * Inputs
+    * Process design kits (PDKs) : DRC&LVS rules, SPICE models, library and user-defined specs -> normally provided by foundry.
+      * Example DRV&LVS input parameters: poly width, extension over active, poly to active spacing
+      * Example Spice input parameters: values for dynamic behavior (Threshold voltage, linear region, saturation region equations) 
+      * Example library and user-defined parameters: cell-height, supply voltage, pin location, drawn gate-length
+  * Cell design
+    * Circuit design
+      * Taking into account the transistor requirements (eg. current and switching threshold) values determine requirements for the circuit.
+    * Layout design
+      * From the circuit design, extract paths for pmos and nmos networks
+      * Obtain [Euler's path](https://en.wikipedia.org/wiki/Eulerian_path) for both
+      * Draw stick diagram
+      * Convert into layout
+    * Characterization
+      * The step that helps getting timing, noise, power characteristics <- **We will follow deeper into this**.
+  * Outputs
+    * CDL (Circuit Description Language)
+    * GDSII
+    * LEF
+    * Extracted spice netlist (.cir)
+
+** Characterization flow 
+
+  1. Read Models (NMOS/PMOS) (and tech file)
+  2. Read extracted Spice netlist
+  3. Recognize behavior of the cell
+  4. Read the subcircuits of the cell
+  5. Attach the necessary power sources
+  6. Apply the stimulus
+  7. Provide the necessary output capacitance(s)
+  8. Provide the necessary simulation commands
+
+All of this information is fed to the characterization program GUNA, generating timing, noise and power .libs.
+
+** Timing characterization
+
+Timing threshold definitions:
+
+  * `slew_low_rise_thr`
+  * `slew_high_rise_thr`
+  * `slew_low_fall_thr`
+  * `slew_high_fall_thr`
+  * `in_rise_thr`
+  * `in_fall_thr`
+  * `out_rise_thr`
+
 
 ![Screenshot 2021-04-07 234307](https://user-images.githubusercontent.com/5050761/114052482-60b22e00-988e-11eb-80d1-1f6a4259f5a6.png)
 ![Screenshot 2021-04-07 234054](https://user-images.githubusercontent.com/5050761/114052488-614ac480-988e-11eb-9c30-717ddb9f70bd.png)
