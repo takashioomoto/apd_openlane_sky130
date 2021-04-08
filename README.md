@@ -196,13 +196,32 @@ All of this information is fed to the characterization program GUNA, generating 
 
 Timing threshold definitions:
 
-  * `slew_low_rise_thr`
-  * `slew_high_rise_thr`
-  * `slew_low_fall_thr`
-  * `slew_high_fall_thr`
-  * `in_rise_thr`
-  * `in_fall_thr`
-  * `out_rise_thr`
+  * `slew_low_rise_thr` - low V threshold for slew rise (typ 20% of waveform)
+  * `slew_high_rise_thr` - high V threshold for slew rise (typ 80% of waveform)
+  * `slew_low_fall_thr` - low V threshold for slew fall (typ 20% of waveform)
+  * `slew_high_fall_thr` - high V threshold for slew fall (typ 80% of waveform)
+  * `in_rise_thr` - input waveform rise delay (typ 50% of waveform)
+  * `in_fall_thr` - input waveform fall delay (typ 50% of waveform)
+  * `out_rise_thr` - output waveform rise delay (typ 50% of waveform)
+  * `out_fall_thr` - output waveform fall delay (typ 50% of waveform)
+
+*** Delay calculations:
+
+Buffer
+`time(out_rise_thr) - time(in_rise_thr)`
+
+Inverter
+`time(out_fall_thr) - time(in_rise_thr)`
+
+Choosing threshold point (ensuring in___xxx___thr is earlier than out___xxx_thr) is critical for characterization. This can be even more challenging if the circuit isn't optimized.
+
+*** Transition time
+
+`time(slew_high_fall_thr) - time(slew_low_fall_thr)`
+`time(slew_low_rise_thr) - time(slew_high_rise_thr)`
+
+*** Output current waveform
+
 
 
 ![Screenshot 2021-04-07 234307](https://user-images.githubusercontent.com/5050761/114052482-60b22e00-988e-11eb-80d1-1f6a4259f5a6.png)
