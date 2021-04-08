@@ -224,13 +224,13 @@ Choosing threshold point (ensuring in___xxx___thr is earlier than out___xxx_thr)
 
 We will see this at a later stage.
 
-* Day 3
+# Day 3
 
-** Labs for CMOS inverter ngspice simulations
+## Labs for CMOS inverter ngspice simulations
 
 We will be using a initial cell design from GitHub to save time for lab. 
 
-*** IO placer revision
+### IO placer revision
 
 This is a quick test of the ability to change parameters during the openLANE flow. In this case an alternative floor IO placer (from 1 - random equidistant, to 2). From our loaded previous design, we perform:
 
@@ -239,7 +239,7 @@ This is a quick test of the ability to change parameters during the openLANE flo
 And we then do `run_floorplan` again. The IO pin organization changes accordingly:
 ![image](https://user-images.githubusercontent.com/5050761/114092777-90772b00-98ba-11eb-8a06-1d21eb88da5d.png)
 
-*** SPICE deck creation for CMOS inverter
+### SPICE deck creation for CMOS inverter
 
 Here we quickly go over the netlist description of the inverter circuit as shown in a SPICE deck.
 
@@ -269,10 +269,12 @@ Nodes are identified in SPICE netlist and named:
 
 From here we can start describing the spice deck, starting with the MOSFET.
 
-``*** MODEL Description ***
+```
+*** MODEL Description ***
 *** NETLIST Description ***
 M1 out in vdd vdd pmos W=0.375u L=0.25u
-M2 out in 0 0 nmos W=0.375u L=0.25u``
+M2 out in 0 0 nmos W=0.375u L=0.25u
+```
 
 For a MOSFET, the description is <NAME> <Drain> <Gate> <Substr> <Source> <Model> <Width> <Length>
    * For example : M1 has drain to "out" node, gate to "in" node and substrate and source nodes are connected to "vdd" node - `M1 out in vdd vdd pmos W=0.375u L=0.25u`
@@ -283,7 +285,8 @@ For passive and voltage sources the format is <NAME> <Pos> <Neg> <Value>:
 
 Adding the remaining components, simulation commands, and model library:
 
-`*** MODEL Description ***
+```
+*** MODEL Description ***
 *** NETLIST Description ***
 M1 out in vdd vdd pmos W=0.375u L=0.25u
 M2 out in 0 0 nmos W=0.375u L=0.25u
@@ -298,7 +301,7 @@ Vin in 0 2.5
 *** .include tsmc_025um_model.mod ***
 .LIB "tsmc_025um_model.mod" CMOS_MODELS
 .end
-</code>`
+```
 
 `.dc Vin 0 2.5 0.05` - performs sweep of Vin from 0 to 2.5V at steps on 0.05. 
 
@@ -314,7 +317,8 @@ We can see how for the CMOS inverter Vm relates to the W/L ratio, so for the inv
 
 For a dynamic simulation, we set Vin with a pulse signal, (2.5V, 10ps rise/fall, 1ns pulse length and 2ns period). Simulation is replaced with a transient analysis from 10ps to 4ns:
 
-`*** MODEL Description ***
+```
+*** MODEL Description ***
 *** NETLIST Description ***
 M1 out in vdd vdd pmos W=0.375u L=0.25u
 M2 out in 0 0 nmos W=0.375u L=0.25u
@@ -328,6 +332,28 @@ Vin in 0 0 pulse 0 2.5 0 10p 10p 1n 2n
 .tran 10p 4n
 *** .include tsmc_025um_model.mod ***
 .LIB "tsmc_025um_model.mod" CMOS_MODELS
-.end`
+.end
+```
 
 This allows us to identify the rise and fall delay.
+
+### Lab steps to git clone vsdstdcelldesign
+
+To clone the cell design from github we use on the `~/design` folder:
+
+`git clone https://github.com/nickson-jose/vsdstdcelldesign.git`
+
+This creates the git structure in the folder vsdstdcelldesign
+
+This cell already includes the inverter designs and we can perform Spice extractions and run simulations. We will first copy the magic tech file to this location:
+
+`cp ~/Desktop/work/tools/openlane_working_dir/pdks/sky130A/libs.tech/magic/sky130A.tech .`
+
+This allows us to view the sky130_inv.mag file as follows:
+
+`magic -T sky130A.tech sky130_inv.mag &`
+
+And we can then view the physical design of the inverter.
+
+![image](https://user-images.githubusercontent.com/5050761/114101816-8eb36480-98c6-11eb-8271-d2784a138f76.png)
+
