@@ -20,8 +20,6 @@ lvXX voltage
 
 ## Day 2 Notes:
 
-*SKY130_D2_SK1 - Chip Floor planning considerations*
-
 FF = Flip Flops/Lathes/rEGISTERS
 
 A1, I1 = Standard Cells (AND/OR/NOT)
@@ -120,8 +118,6 @@ UNITS DISTANCE MICRONS 1000 ; (0.001 mm)
 DIEAREA ( llx lly ) ( urx ury )
 
 <code>magic -T ~/Desktop/work/tools/openlane_working_dir/pdks/sky130A/libs.tech/magic/sky130A.tech lef read ../../tmp/merged.lef def read picorv32a.floorplan.def &</code>
-
-*SKY130_D2_SK2 - Library Binding and Placement*
 
 ### Netlist binding and initial place design
 
