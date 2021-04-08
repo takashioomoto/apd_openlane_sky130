@@ -241,7 +241,10 @@ And we then do `run_floorplan` again. The IO pin organization changes accordingl
 
 *** SPICE deck creation for CMOS inverter
 
-Component connectivity for this circuit (netlist):
+Here we quickly go over the netlist description of the inverter circuit as shown in a SPICE deck.
+
+Component connectivity for this circuit:
+
 ![image](https://user-images.githubusercontent.com/5050761/114093428-62deb180-98bb-11eb-89fc-cc333462591a.png)
 
   * Vin connects to M1 and M2 gate
@@ -250,9 +253,9 @@ Component connectivity for this circuit (netlist):
 
 Component values:
 
-  * cload (load capacitor) is set to 10fF (we will calculate this value later)
-  * PMOS wl = 0.375u/0.25u
-  * NMOS wl = 0.375u/0.25u
+  * cload (load capacitor) is set to 10fF (we will see how to properly calculate this value later)
+  * PMOS W/L = 0.375u/0.25u
+  * NMOS W/L = 0.375u/0.25u
 
 (ideally PMOS should be 2x, 3x wider)
 
@@ -260,5 +263,71 @@ Component values:
   Vdd = 2.5V
   Vss -> common to supplies.
   
-  Identify nodes in SPICE netlist:
-  ![image](https://user-images.githubusercontent.com/5050761/114094352-80604b00-98bc-11eb-81e2-d1b92c15ee1d.png)
+Nodes are identified in SPICE netlist and named:
+
+![image](https://user-images.githubusercontent.com/5050761/114094546-ba315180-98bc-11eb-93dc-b9f78c822bb9.png)
+
+From here we can start describing the spice deck, starting with the MOSFET.
+
+``*** MODEL Description ***
+*** NETLIST Description ***
+M1 out in vdd vdd pmos W=0.375u L=0.25u
+M2 out in 0 0 nmos W=0.375u L=0.25u``
+
+For a MOSFET, the description is <NAME> <Drain> <Gate> <Substr> <Source> <Model> <Width> <Length>
+   * For example : M1 has drain to "out" node, gate to "in" node and substrate and source nodes are connected to "vdd" node - `M1 out in vdd vdd pmos W=0.375u L=0.25u`
+
+For passive and voltage sources the format is <NAME> <Pos> <Neg> <Value>:
+  * For the 10fF cload capacitor between node "out" and "0" - `cload out 0 10f`
+  * For the 2.5V voltage source Vdd between node "in" and "0" - `Vdd in 0 2.5`
+
+Adding the remaining components, simulation commands, and model library:
+
+`*** MODEL Description ***
+*** NETLIST Description ***
+M1 out in vdd vdd pmos W=0.375u L=0.25u
+M2 out in 0 0 nmos W=0.375u L=0.25u
+ 
+cload out 0 10f
+
+Vdd vdd 0 2.5
+Vin in 0 2.5
+*** SIMULATION Commands ***
+.op
+.dc Vin 0 2.5 0.05
+*** .include tsmc_025um_model.mod ***
+.LIB "tsmc_025um_model.mod" CMOS_MODELS
+.end
+</code>`
+
+`.dc Vin 0 2.5 0.05` - performs sweep of Vin from 0 to 2.5V at steps on 0.05. 
+
+With this deck we can test the model on SPICE for the static behavior - for example changing the W/L ratio for the PMOS transistor:
+
+![image](https://user-images.githubusercontent.com/5050761/114098279-6e34db80-98c1-11eb-97ec-dfff66ff1c0b.png)
+
+CMOS inverter robustness:
+ * Switching threshold (Vm) - point where Vin = Vout
+   * Vm should be far from the threshold conditions of the cell.
+
+We can see how for the CMOS inverter Vm relates to the W/L ratio, so for the inverter, we can determine the expected Vm based on the W/L ratio of PMOS and NMOS MOSFETs.
+
+For a dynamic simulation, we set Vin with a pulse signal, (2.5V, 10ps rise/fall, 1ns pulse length and 2ns period). Simulation is replaced with a transient analysis from 10ps to 4ns:
+
+`*** MODEL Description ***
+*** NETLIST Description ***
+M1 out in vdd vdd pmos W=0.375u L=0.25u
+M2 out in 0 0 nmos W=0.375u L=0.25u
+ 
+cload out 0 10f
+
+Vdd vdd 0 2.5
+Vin in 0 0 pulse 0 2.5 0 10p 10p 1n 2n
+*** SIMULATION Commands ***
+.op
+.tran 10p 4n
+*** .include tsmc_025um_model.mod ***
+.LIB "tsmc_025um_model.mod" CMOS_MODELS
+.end`
+
+This allows us to identify the rise and fall delay.
