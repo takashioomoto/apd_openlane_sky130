@@ -109,9 +109,13 @@ Switches for configuration (including floorplan) can be found on <code>$OPENFLOW
 
 As you move into the flow, it might be useful to modify parameters as needed. For example, during the placement stage, PT_TARGET_DENSITY might be widely spread for condition analysis, and then set closer to dense to test timing constraints during design closure.
 
-From a design folder, these parameters can be applied to <code>./config.tcl</code>
+From a design folder, these parameters can also be applied to <code>./config.tcl</code>, for example:
 
 <code>set ::env(FP_CORE_UTIL) 65</code>
+
+For now, we are adding some configuration values to the design - FP_CORE_UTIL to 65, FP_:
+
+![Screenshot 2021-04-07 213023](https://user-images.githubusercontent.com/5050761/114052492-61e35b00-988e-11eb-8207-d992caa54ee1.png)
 
 TODO:
 UNITS DISTANCE MICRONS 1000 ; (0.001 mm)
@@ -133,3 +137,7 @@ Signal integrity - adding repeaters on the floorplan at expense of space
 Data slew analysis
 
 run_placement - runs course placement
+
+![Screenshot 2021-04-07 234307](https://user-images.githubusercontent.com/5050761/114052482-60b22e00-988e-11eb-80d1-1f6a4259f5a6.png)
+![Screenshot 2021-04-07 234054](https://user-images.githubusercontent.com/5050761/114052488-614ac480-988e-11eb-9c30-717ddb9f70bd.png)
+![Screenshot 2021-04-07 225931](https://user-images.githubusercontent.com/5050761/114052489-614ac480-988e-11eb-9850-5dac648def23.png)
