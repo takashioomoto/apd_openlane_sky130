@@ -93,7 +93,7 @@ In order to create further changes from the prep, add <code<-overwrite</code> to
 
 This allows to apply any changes - everthing will be erased. An option to further change configuration during the run is using the <code>set</code> command:
 
-<code>set env(CLOCK_PERIOD) 15.000</code>
+<code>set ::env(CLOCK_PERIOD) 15.000</code>
 
 Finally, we can run the sythesis stage:
 
@@ -222,8 +222,43 @@ Choosing threshold point (ensuring in___xxx___thr is earlier than out___xxx_thr)
 
 *** Output current waveform
 
+We will see this at a later stage.
 
+* Day 3
 
-![Screenshot 2021-04-07 234307](https://user-images.githubusercontent.com/5050761/114052482-60b22e00-988e-11eb-80d1-1f6a4259f5a6.png)
-![Screenshot 2021-04-07 234054](https://user-images.githubusercontent.com/5050761/114052488-614ac480-988e-11eb-9c30-717ddb9f70bd.png)
-![Screenshot 2021-04-07 225931](https://user-images.githubusercontent.com/5050761/114052489-614ac480-988e-11eb-9850-5dac648def23.png)
+** Labs for CMOS inverter ngspice simulations
+
+We will be using a initial cell design from GitHub to save time for lab. 
+
+*** IO placer revision
+
+This is a quick test of the ability to change parameters during the openLANE flow. In this case an alternative floor IO placer (from 1 - random equidistant, to 2). From our loaded previous design, we perform:
+
+`set ::env(FP_IO_MODE) 2`
+
+And we then do `run_floorplan` again. The IO pin organization changes accordingly:
+![image](https://user-images.githubusercontent.com/5050761/114092777-90772b00-98ba-11eb-8a06-1d21eb88da5d.png)
+
+*** SPICE deck creation for CMOS inverter
+
+Component connectivity for this circuit (netlist):
+![image](https://user-images.githubusercontent.com/5050761/114093428-62deb180-98bb-11eb-89fc-cc333462591a.png)
+
+  * Vin connects to M1 and M2 gate
+  * PMOS (M1) source connects to Vdd
+  * NMOS (M2) source connects to Vss
+
+Component values:
+
+  * cload (load capacitor) is set to 10fF (we will calculate this value later)
+  * PMOS wl = 0.375u/0.25u
+  * NMOS wl = 0.375u/0.25u
+
+(ideally PMOS should be 2x, 3x wider)
+
+  Vin = 2.5V (related to channel site - 0.25 -> 2.5V)
+  Vdd = 2.5V
+  Vss -> common to supplies.
+  
+  Identify nodes in SPICE netlist:
+  ![image](https://user-images.githubusercontent.com/5050761/114094352-80604b00-98bc-11eb-81e2-d1b92c15ee1d.png)
