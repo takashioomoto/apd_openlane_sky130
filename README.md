@@ -357,3 +357,61 @@ And we can then view the physical design of the inverter.
 
 ![image](https://user-images.githubusercontent.com/5050761/114101816-8eb36480-98c6-11eb-8271-d2784a138f76.png)
 
+## Inception of Layout - CMOS fabrication process
+
+### Create active regions
+
+We require a silicon substrate on the cell to implement active regions.
+
+1. Selecting subtrate - P-Type, high resistivity (5~50 Ohms), doping level (10^15 cm^3), orientation (100). Doping is lower than 'well' doping used for active regions.
+1. Create active region for transistors:
+   1. Create isolation between pockets using SiO2 (40nm), Si3N4 (80nm) layers over substrate.
+   1. 1um photoresist is added
+   1. Add Mask1 to protect from UV light. UV light will activate exposed areas and photoresist is removed after developing.
+   1. Remove Mask1. The exposed areas can be individually manipulated.
+   1. Etch off Si3N4 from exposed areas.
+   1. Remove photoresist layer. This leaves photoresist areas with Si3N4.
+   1. Areas with SiO2 exposed (the ones without Si3N4 layer) will grow after passing an oxidation furnace.
+   1. The oxidized SiO2 now forms isolation islands for the transistors. This process is called LOCOS - Local Oxidation of Silicon.
+   1. The areas where Si3N4 and the oxidized SiO2 meet are also called "Bird's beak"
+   1. Finally strip out Si3N4 with hot phosphoric acid.
+1. Formation of N-well and P-well
+   1. Add photo resist, and define Mask2 to protect one of the transistor regions.
+   2. Expose to UV light, so it removes photoresist of unprotected area after develop.
+   3. Remove mask and difuse Borom (P-type material) using ion implantation (high evergy, ~200keV). This creates a P-type layer "P-well".
+   4. Perform steps 1-2 to the other transistor area. The implantation process uses phosphorus, this creates a N-type layer "N-well".
+   5. Take the die into a high temperature furnace. The Drive-in diffusion will increase the size of both wells into the substrate.
+   6. This design feature where both types of transistors are grown in known as a twin tub process.
+   7. N-well will be used for a PMOS transistor, and P-well for a NMOS transistor.
+1. Formation of gate terminal
+   1. Gate terminal defines threshold voltage, so the values defined here (NA - Doping concentration and Cox - Oxide capacitance) are important.
+   2. Maintain doping concentration. Mask4 protects one of the transistors - in this case P-well is performed.
+   3. A low energy Boron implant that applies a doping concentration on the P-well. a "P" layer is set. Note that the SiO2 is still getting damaged.
+   4. "N" layer is set with Mask5 and a low energy Arsenic doping. Notice that both these steps set the doping concentration for the transistors.
+   5. Remove damaged SiO2 with etched hydrofluoric(HF) acid. Then regrow SiO2 again to get a high quality oxide (~10nm thin). This step sets the Oxide capacitance.
+   6. Deposit a thick (0.4um) polysilicon layer, and lower the gate resistance with N-Type ion implants.
+   7. Create a Mask6 for the gate areas, allowing to etch out the polysilicon outside of the gate areas. This completes the gate with full control of parameters.
+1. Lightly doped drain (LDD) formation
+   1. We need to implement P+, P-, N doping profiles to set the PMOS drain, and N+, N-, and P doping profiles for the NMOS drain.
+   2. Mask7 is set protecting PMOS area. P-well is unprotected and we do N-type lightly doped implementation (N-) implant around the gate.
+   3. Mask8 is set protecting NMOS area. N-well is lightly P-type doped to set the (P-) implant around the gate.
+   4. Side-wall spacers are added around the gate by adding a thick (0.1um) So3N4 or Sio2 layer and performing plasma ansiotropic etching.
+   5. Side-wall spacers help keep N- and P- implants during the next steps of doping to form the source and drain.
+1. Source - drain formation
+   1. A thin screen oxide is added to avoid heavy channeling into the substrate during implants.
+   2. Mask9 is set over the PMOS area. NMOS area is strongly implanted with Arsenic, with the N+ implant taking over most (but not all) of the N- area and some P-well.
+   2. Mask10 is set over the PMOS area. PMOS area is strongly implanted with Boron, with the P+ implant taking over most (but not all) of the P- area and some N-well.
+   3. We expose the half built MOSFETs to high temperature anelling, forcing P+ and N+ impurities further into the P-wells and N-wells.
+1. Local interconnect formation
+   1. Remove the thin screen oxide with HF solution from the previous step, making gate, source and gate open.
+   2. Deposit titanium on wafer surface, using sputtering. The whole structure is covered.
+   3. Create the contact surface by heating the wafer in a N2 ambient for 60 sec, creating low resistant TiSi in areas that connect with the gate silicon.
+   4. TiN is also produced over all the structure, that can be used for local communication.
+   5. Mask11 is used to block the areas that should be local interconnects and RCA cleaning is used to etch off the unneeded TiN.
+1. Higher level metal formation
+   1. The surface is now non linear - surface consists of many diferent levels of layers.
+   2. Deposit a thick (1um) SiO2 layer doped with phosphorus or boron on wafer surface.
+   3. Chemical mechanical polishing (CMP) is used to planarize the wafer surface.
+   4. We use Mask12 to etch off the SiO2 where we want to "drill" the contact holes
+   5. Deposit a thin layer (10nm) of TiN.
+   6. Deposit a 
