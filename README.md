@@ -276,7 +276,7 @@ M1 out in vdd vdd pmos W=0.375u L=0.25u
 M2 out in 0 0 nmos W=0.375u L=0.25u
 ```
 
-For a MOSFET, the description is <NAME> <Drain> <Gate> <Substr> <Source> <Model> <Width> <Length>
+For a MOSFET, the description is <NAME> <Drain> <Gate> <Source> <Substr> <Model> <Width> <Length>
    * For example : M1 has drain to "out" node, gate to "in" node and substrate and source nodes are connected to "vdd" node - `M1 out in vdd vdd pmos W=0.375u L=0.25u`
 
 For passive and voltage sources the format is <NAME> <Pos> <Neg> <Value>:
@@ -414,4 +414,66 @@ We require a silicon substrate on the cell to implement active regions.
    3. Chemical mechanical polishing (CMP) is used to planarize the wafer surface.
    4. We use Mask12 to etch off the SiO2 where we want to "drill" the contact holes
    5. Deposit a thin layer (10nm) of TiN.
-   6. Deposit a 
+   6. Deposit a blanket tungsten layer (W) and perform CMP again
+   7. Deposit an Aluminium layer
+   8. Use Mask13 to etch out the aluminium to establish the contacts.
+   9. The tugsten layer is defined as Metal0 layer, the first aluminium layer as Metal1 layer
+   10. For firther layers we add another SiO layer and CMD
+   11. Mask14 is used to drill contact holes, TiN is deposited, W fills the contacts, another aluminium layer is added.
+   12. Mask15 used to drill the aluminium layer.
+   13. The last level uses a strong dielectric (Si3N4), Mask16 is used to drill the contact points.
+
+## Lab introduction to Sky130 basic layers layout and LEF using inverter
+
+![image](https://user-images.githubusercontent.com/5050761/114236370-cdf2bb80-9981-11eb-9821-d4a958225ae6.png)
+![image](https://user-images.githubusercontent.com/5050761/114236427-e1058b80-9981-11eb-9c97-747c398df985.png)
+
+![image](https://user-images.githubusercontent.com/5050761/114236668-3e99d800-9982-11eb-9e76-92e9a4e8b94c.png)
+
+![image](https://user-images.githubusercontent.com/5050761/114236746-540f0200-9982-11eb-83f4-0a136b89292d.png)
+
+
+
+![image](https://user-images.githubusercontent.com/5050761/114236554-0eead000-9982-11eb-94b9-8ba6285e7625.png)
+
+Technology LEF does not include information about the layout, only the metal layer. 
+
+![image](https://user-images.githubusercontent.com/5050761/114237949-1c08be80-9984-11eb-8e67-6385482efb13.png)
+
+
+![image](https://user-images.githubusercontent.com/5050761/114238235-96d1d980-9984-11eb-9abd-dee7dacc0d4e.png)
+
+![image](https://user-images.githubusercontent.com/5050761/114238525-0c3daa00-9985-11eb-8d36-e10a842d92ef.png)
+
+![image](https://user-images.githubusercontent.com/5050761/114239749-c4b81d80-9986-11eb-9074-630782f31e33.png)
+
+Transient response
+
+![image](https://user-images.githubusercontent.com/5050761/114240180-693a5f80-9987-11eb-949d-fa7eab97aa51.png)
+increasing the value of the load capacitance to 2fF
+
+![image](https://user-images.githubusercontent.com/5050761/114240487-e06ff380-9987-11eb-9241-af2e52b121e7.png)
+
+Characterizing a cell
+
+*Rise transition (20% to 80%)
+*Fall transition (80% to 20%)
+
+Propagation delay
+![image](https://user-images.githubusercontent.com/5050761/114240763-5bd1a500-9988-11eb-947a-c2591d897c7a.png)
+
+![image](https://user-images.githubusercontent.com/5050761/114240930-a81ce500-9988-11eb-90cf-376a07461030.png)
+
+Extracking the values:
+![image](https://user-images.githubusercontent.com/5050761/114241214-1d88b580-9989-11eb-8068-881ac8bb9be1.png)
+
+2.24575e-9 - 2.18197e-9 = 0.06378e-9 -> Rise time 0.064ns
+
+transition time
+![image](https://user-images.githubusercontent.com/5050761/114241670-d3ec9a80-9989-11eb-8386-a4f89a8a0b55.png)
+
+![image](https://user-images.githubusercontent.com/5050761/114241700-e070f300-9989-11eb-86b4-9179d078007b.png)
+
+2,21087e-9 - 2,15029e-9 = 0.06058e-9 ns -> Propagation rise delay 0.06ns
+
+Characterization for a given temperature.
