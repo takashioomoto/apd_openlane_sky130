@@ -228,7 +228,7 @@ We will see this at a later stage.
 
 ## Labs for CMOS inverter ngspice simulations
 
-We will be using a initial cell design from GitHub to save time for lab. 
+We will be using a initial cell design from GitHub to save time for lab. Information about the standard cell used can be found at [vsdstdcelldesign](https://github.com/nickson-jose/vsdstdcelldesign).
 
 ### IO placer revision
 
@@ -359,9 +359,9 @@ And we can then view the physical design of the inverter.
 
 ## Inception of Layout - CMOS fabrication process
 
-### Create active regions
+This is a basic introduction to CMOS fabritation, mostly meant to explain the several steps and mask requirements:
 
-We require a silicon substrate on the cell to implement active regions.
+We require a silicon substrate (the wafer) to implement active regions.
 
 1. Selecting subtrate - P-Type, high resistivity (5~50 Ohms), doping level (10^15 cm^3), orientation (100). Doping is lower than 'well' doping used for active regions.
 1. Create active region for transistors:
@@ -425,23 +425,38 @@ We require a silicon substrate on the cell to implement active regions.
 
 ## Lab introduction to Sky130 basic layers layout and LEF using inverter
 
+Going back to magic, we can quickly check the diferent layers used in CMOS. As before, hovering and pressing `s` allows to select a specific layer and typing "what" on the tcl window lets us se the named layer. For example the two pictures show that by selecting the polysilicon gate element we can see the nmos and pmos layers.
 ![image](https://user-images.githubusercontent.com/5050761/114236370-cdf2bb80-9981-11eb-9821-d4a958225ae6.png)
+
 ![image](https://user-images.githubusercontent.com/5050761/114236427-e1058b80-9981-11eb-9c97-747c398df985.png)
 
+Pressing two times 's' lets us select the connected elements of a junction. For example here we can see the source connecting to VGND and VPWR respectively.
 ![image](https://user-images.githubusercontent.com/5050761/114236668-3e99d800-9982-11eb-9e76-92e9a4e8b94c.png)
 
 ![image](https://user-images.githubusercontent.com/5050761/114236746-540f0200-9982-11eb-83f4-0a136b89292d.png)
 
-
+Likewise, the drain on both MOSFETs is connected to output pin Y 
 
 ![image](https://user-images.githubusercontent.com/5050761/114236554-0eead000-9982-11eb-94b9-8ba6285e7625.png)
 
-Technology LEF does not include information about the layout, only the metal layer. 
-
+DRC (Design rule check) can also be performed. The DRC indicator will show any existing non-compliance and using menu option DRC->Show Next Error highlights the discrepancy as well as output the error on the tcl window:
 ![image](https://user-images.githubusercontent.com/5050761/114237949-1c08be80-9984-11eb-8e67-6385482efb13.png)
 
+### Spice model extraction
+
+With a design open in magic we can export the related spice file. By default this will be done in the directory magic was started with (type `pwd` in tcl command window to verify). the sequence of commands to obtain the extracted SPICE deck is as follows:
+
+`extract all` - this results in a .ext file being created
+
+`ext2spice ctresh 0 rtresh 0`- set the parasitic capacitance and resistance threshold to 0 so all are present in the model
+
+`ext2spice` extract the file.
+
+This results in the spice file (in this case sky130_inv.spice) being saved in the directory.
 
 ![image](https://user-images.githubusercontent.com/5050761/114238235-96d1d980-9984-11eb-9abd-dee7dacc0d4e.png)
+
+
 
 ![image](https://user-images.githubusercontent.com/5050761/114238525-0c3daa00-9985-11eb-8d36-e10a842d92ef.png)
 
@@ -477,3 +492,8 @@ transition time
 2,21087e-9 - 2,15029e-9 = 0.06058e-9 ns -> Propagation rise delay 0.06ns
 
 Characterization for a given temperature.
+
+
+
+Technology LEF does not include information about the layout, only the metal layer. 
+
