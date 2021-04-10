@@ -440,9 +440,10 @@ Likewise, the drain on both MOSFETs is connected to output pin Y
 ![image](https://user-images.githubusercontent.com/5050761/114236554-0eead000-9982-11eb-94b9-8ba6285e7625.png)
 
 DRC (Design rule check) can also be performed. The DRC indicator will show any existing non-compliance and using menu option DRC->Show Next Error highlights the discrepancy as well as output the error on the tcl window:
+
 ![image](https://user-images.githubusercontent.com/5050761/114237949-1c08be80-9984-11eb-8e67-6385482efb13.png)
 
-### Spice model extraction
+### Spice model extraction and model characterization
 
 With a design open in magic we can export the related spice file. By default this will be done in the directory magic was started with (type `pwd` in tcl command window to verify). the sequence of commands to obtain the extracted SPICE deck is as follows:
 
@@ -450,29 +451,47 @@ With a design open in magic we can export the related spice file. By default thi
 
 `ext2spice ctresh 0 rtresh 0`- set the parasitic capacitance and resistance threshold to 0 so all are present in the model
 
-`ext2spice` extract the file.
+`ext2spice` - extract the file.
 
 This results in the spice file (in this case sky130_inv.spice) being saved in the directory.
 
 ![image](https://user-images.githubusercontent.com/5050761/114238235-96d1d980-9984-11eb-9abd-dee7dacc0d4e.png)
 
-
+And we can verify the extraction.
 
 ![image](https://user-images.githubusercontent.com/5050761/114238525-0c3daa00-9985-11eb-8d36-e10a842d92ef.png)
 
+The extracted spice file needs some updates in onder to be usable:
+  * Scaling to be set to 0.01u (magic smallestunit)
+  * The related library for the mosfet models needs to be added ( `.include` commands)
+  * VDD (power) and Va supplies need to be added to the simulation.
+  * Accordingly, we need to add a VSS node at 0V to ground the power supplies and the inverter model. 
+  * Finally we add the transient simulation command (`.tran`), run and end the simulation.  
+
+The end result is as follows:
 ![image](https://user-images.githubusercontent.com/5050761/114239749-c4b81d80-9986-11eb-9074-630782f31e33.png)
 
-Transient response
+### Transient response
 
+With the modified model, we can start ngspice from the terminal:
+
+`ngspice sky130a_inv.spice`
+
+On a successfull load we can use the SPICE terminal to plot the output (y) over time and input (a):
+
+'plot y vs time a' 
+
+We initially obtaint this image, that has a overshoot
 ![image](https://user-images.githubusercontent.com/5050761/114240180-693a5f80-9987-11eb-949d-fa7eab97aa51.png)
-increasing the value of the load capacitance to 2fF
 
+Going back to Spice and increasing the value of the load capacitance to 2fF
 ![image](https://user-images.githubusercontent.com/5050761/114240487-e06ff380-9987-11eb-9241-af2e52b121e7.png)
 
-Characterizing a cell
+*Characterizing the transient response*
 
-*Rise transition (20% to 80%)
-*Fall transition (80% to 20%)
+As discussed before in the spice simulation , we can extract the values by checking rise and fall times:
+  * Rise transition (20% to 80%)
+  * Fall transition (80% to 20%)
 
 Propagation delay
 ![image](https://user-images.githubusercontent.com/5050761/114240763-5bd1a500-9988-11eb-947a-c2591d897c7a.png)
@@ -484,16 +503,104 @@ Extracking the values:
 
 2.24575e-9 - 2.18197e-9 = 0.06378e-9 -> Rise time 0.064ns
 
-transition time
+Transition time
 ![image](https://user-images.githubusercontent.com/5050761/114241670-d3ec9a80-9989-11eb-8386-a4f89a8a0b55.png)
 
 ![image](https://user-images.githubusercontent.com/5050761/114241700-e070f300-9989-11eb-86b4-9179d078007b.png)
 
 2,21087e-9 - 2,15029e-9 = 0.06058e-9 ns -> Propagation rise delay 0.06ns
 
-Characterization for a given temperature.
+This are the results given for a single temperature profile - TEMP = 27 and TNOM = 27
 
+### Lab introduction to Magic tool options and DRC rules
 
+Here we will look into magic's DRC format, that is slightly different of other industry options. A lot of information about magic can be found at  http://opencircuitdesign.com/magic - in particular the Using Magic and Technology Files sections are relevant for this lab.
 
-Technology LEF does not include information about the layout, only the metal layer. 
+  * Technology files are important as they include a lot of information, more than normally found in other tools:
+    * Layer types, colors and patterns
+    * Electrical connectivity
+    * DRC rules
+    * GDS generation rules
+    * Device extraction rules to generate netlists
+    * Rules for interactive wiring
+    * etc...
+    
+The other important links for this section is the Google Skywater PDK (https://github.com/google/skywater-pdk) and related documentation (https://skywater-pdk.readthedocs.io/en/latest/)
+
+You won't see implant layers in the magic layout view (they are generated on the output file).
+The only way to see those layers is to use the `cifsee` command to highlight the areas where that layer will be generated on output.
+
+http://opencircuitdesign.com/open_pdks/archive/drc_tests.tgz contains a series of files that we can use to test different DRC errors, as well as the technology file and a `.magicrc` startup script.
+
+Let's open an example file (met3.mag) in magic 
+
+![image](https://user-images.githubusercontent.com/5050761/114277355-1d40f680-9a2b-11eb-83e6-cd22d788a119.png)
+
+The white patches represent the DRC errors.
+
+We can see the DRV errors by selecting the item and using the `drc why` command.
+
+To see the automatic generation of via2 (automatically complying the m3.4 rule) we can create a box of m3contact and then using `cif see VIA2` to display the mask layer for via2 generated on the GDS output. the cifoutput section of the tech file explain how to draw contact cuts. To clear this display (called feedback view) you can use `feedback clear` or `feedclear`
+
+In order to verify deisgn rule m3.4 (Via2 must be enclosed by Met3 by at least 0.065 µm) we can measure the distance between a via2 and the cornet of the m3contact. We draw a box between the two sections and verify the width (0.13µm in this case) that is clearly larger than the DRC.
+
+![image](https://user-images.githubusercontent.com/5050761/114277970-d274ae00-9a2d-11eb-95e0-06594768deea.png)
+
+We now move to example poly.mag, with several rule examples that are not correctly parse. Here is an example of poly.9: Poly resistor spacing to poly or spacing (no overlap) to diff/tap 0.480µm
+
+![image](https://user-images.githubusercontent.com/5050761/114278567-bf171200-9a30-11eb-8801-7fc91bf3c576.png)
+
+The separation between poly (visible on bottom) and npolyres (visible on top) is only 0.21µm, but no DRC is shown:
+
+![image](https://user-images.githubusercontent.com/5050761/114278630-056c7100-9a31-11eb-840b-1458e9670909.png)
+
+We can check the supplied sky130A.tech file and see the rule for poly.9 - and no attempt has been made to define the difference between poly resistor and poly (only to uhrpoly and xhrpoly). So we perform this by adding the new rules for alias allpolynonres - a short name for all non-resistive poly materials.
+
+![image](https://user-images.githubusercontent.com/5050761/114278919-3600da80-9a32-11eb-9658-1ad5d572751b.png)
+
+![image](https://user-images.githubusercontent.com/5050761/114278964-7d876680-9a32-11eb-82be-c9f0fda2ce76.png)
+
+To update an open magic window with the tech file we can use `tech load sky130A.tech` on the tcl command line, followed by 'drc check'. The poly now show the DRC noncompliance expected by the rules:
+
+![image](https://user-images.githubusercontent.com/5050761/114279228-e4594f80-9a33-11eb-81d7-d6658452192f.png)
+
+However, the example does not show spacing for dif or tap. We can generate examples for those:
+
+![image](https://user-images.githubusercontent.com/5050761/114279679-22f00980-9a36-11eb-8049-980186945aef.png)
+
+Is now visible that the DRC is not applying to the respoly layer - only the xhr and uhr poly have the full ruleset. However, that rule is already implemented for respoly and npolyres.
+
+We return to the tech file to check that rules and extend it to the all diffres materials.
+![image](https://user-images.githubusercontent.com/5050761/114279910-32238700-9a37-11eb-98c8-af1dfbed113e.png)
+
+DRC is now visible for the diff material.
+![image](https://user-images.githubusercontent.com/5050761/114280006-9fcfb300-9a37-11eb-838a-7634c946a962.png)
+
+Now we move to a more challenging DRC problem. We will need to use the cifoutput operators to generate a complex geometric feature that features the DRC error. 
+
+![image](https://user-images.githubusercontent.com/5050761/114280466-a3643980-9a39-11eb-9064-a684cd0bbef5.png)
+
+nwell.4 (All n-wells will contain metal-contacted tap (rule checks only for licon on tap)) is a rule that is not correctly implemented as seen on the nwell.mag file.
+
+![image](https://user-images.githubusercontent.com/5050761/114280790-4ec1be00-9a3b-11eb-98e1-458c63b0d477.png)
+
+This n-well does not contain a mtap layer contact (named nsubstratencontact, or NSC) but no drc is generated.
+As there are no mtap element to measure, we can use the cifoutput operations to create this drc rule. Of particular use is the bloat-all operator and the binary operations.
+
+![image](https://user-images.githubusercontent.com/5050761/114281185-36eb3980-9a3d-11eb-8138-09b7c428d99a.png)
+![image](https://user-images.githubusercontent.com/5050761/114281230-816cb600-9a3d-11eb-80c5-cc442e4fe057.png)
+
+![image](https://user-images.githubusercontent.com/5050761/114281165-1fac4c00-9a3d-11eb-9352-428666448608.png)
+
+# LEF file extraction
+Let's extract lef life from our inverter.
+![image](https://user-images.githubusercontent.com/5050761/114281711-3dc77b80-9a40-11eb-8604-9d7f891c937e.png)
+  * Ensuring the grid can reach A and Y
+  * Width of standard cell LEF should be a xpitch multiple
+  * Height of standard cell LEF should be a ypitch multiple!
+[image](https://user-images.githubusercontent.com/5050761/114281888-4bc9cc00-9a41-11eb-9521-521cfdd68808.png)
+
+When extracting a LEF file, ports are extracted. This is how ports are defined (see nickson-jose github)
+![image](https://user-images.githubusercontent.com/5050761/114282069-196c9e80-9a42-11eb-9097-cb13af254353.png)
+
 
