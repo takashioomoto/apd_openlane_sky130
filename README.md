@@ -592,7 +592,7 @@ As there are no mtap element to measure, we can use the cifoutput operations to 
 
 ![image](https://user-images.githubusercontent.com/5050761/114281165-1fac4c00-9a3d-11eb-9352-428666448608.png)
 
-# LEF file extraction
+### LEF file extraction
 Let's extract lef life from our inverter.
 ![image](https://user-images.githubusercontent.com/5050761/114281711-3dc77b80-9a40-11eb-8604-9d7f891c937e.png)
   * Ensuring the grid can reach A and Y
@@ -603,4 +603,55 @@ Let's extract lef life from our inverter.
 When extracting a LEF file, ports are extracted. This is how ports are defined (see nickson-jose github)
 ![image](https://user-images.githubusercontent.com/5050761/114282069-196c9e80-9a42-11eb-9097-cb13af254353.png)
 
+The LEF file creation is just a matter of using command `lef write` on magic's tcl terminal. This creates a file with the same name as the magic source file, but extension .lef (in this case sky130_vsdinv.lef).
+
+### Adding LEF file into openLANE flow
+
+ * copy LEF file into src folder of picorv32a
+ * we also need a library to include the LEF element - we copy the openlane pdk libraries to the src foler as well
+
+![image](https://user-images.githubusercontent.com/5050761/114298916-f204e880-9ab8-11eb-9f40-942e414594a4.png)
+
+Add the rule to include the extra LEF files into picorv32a `config.tcl` 
+
+![image](https://user-images.githubusercontent.com/5050761/114300172-35625580-9abf-11eb-844e-068e712deb44.png)
+
+Then add the following commands before synthesis:
+
+`set lefs [glob $::env(DESIGN_DIR)/src/*.lef]
+add_lefs -src $lefs`
+
+![image](https://user-images.githubusercontent.com/5050761/114299593-79a02680-9abc-11eb-8bef-6963c152f400.png)
+
+![image](https://user-images.githubusercontent.com/5050761/114300235-7f4b3b80-9abf-11eb-8eda-39ed18c84734.png)
+
+Synthesis fails with violated slack:
+
+![image](https://user-images.githubusercontent.com/5050761/114300251-8d00c100-9abf-11eb-988d-f599c5855ca4.png)
+
+![image](https://user-images.githubusercontent.com/5050761/114300255-968a2900-9abf-11eb-933f-695e89ff145a.png)
+
+
+| `SYNTH_STRATEGY` | Strategies for abc logic synthesis and technology mapping <br> Possible values are 0, 1 (delay), 2, and 3 (area)<br> (Default: `2`)|
+| `SYNTH_BUFFERING` | Enables abc cell buffering <br> Enabled = 1, Disabled = 0 <br> (Default: `1`)|
+| `SYNTH_SIZING` | Enables abc cell sizing (instead of buffering) <br> Enabled = 1, Disabled = 0 <br> (Default: `0`)|
+
+with SYNTH_STRATEGY 2 / SYNTH_BUFFERING 0 / SYNTH_SIZING 1
+Chip area for module '\picorv32a': 225955.459200
+tns -1623.26
+wns -15.96
+
+with SYNTH_STRATEGY 1 / SYNTH_BUFFERING 1 / SYNTH_SIZING 1
+Chip area for module '\picorv32a': 317725.974400
+tns -88.54
+wns -3.36
+
+![image](https://user-images.githubusercontent.com/5050761/114301511-8f661980-9ac5-11eb-80b7-fbd2981992e2.png)
+
+After run_floorplan and run_placement
+
+![image](https://user-images.githubusercontent.com/5050761/114301645-17e4ba00-9ac6-11eb-92b8-924b93531416.png)
+
+Preparing for OpenSTA
+![image](https://user-images.githubusercontent.com/5050761/114302360-0650e180-9ac9-11eb-9bc4-1a3596d2fe1a.png)
 
