@@ -1,6 +1,14 @@
 # apd_openlane_sky130
 Advanced Physical Design using OpenLANE/Sky130 - Repository by Nuno Antunes (nuno.antunes@low-end.net)
 
+[Day 1 Notes](#day-1-notes)
+
+[Day 2 Notes](#day-2-notes)
+
+[Day 3 Notes](#day-3-notes)
+
+[Acknowledgements](#acknowledgements)
+
 ## Day 1 Notes:
 
 hd high density
@@ -654,4 +662,11 @@ After run_floorplan and run_placement
 
 Preparing for OpenSTA
 ![image](https://user-images.githubusercontent.com/5050761/114302360-0650e180-9ac9-11eb-9bc4-1a3596d2fe1a.png)
+
+# Acknowledgements
+
+[Kunal Ghosh](https://github.com/kunalg123) - Co-founder (VSD Corp. Pvt. Ltd)
+
+[Nickson Jose](https://github.com/nickson-jose) - VSD VLSI Engineer
+
 
